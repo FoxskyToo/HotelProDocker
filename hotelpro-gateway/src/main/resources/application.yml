@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: hotelpro-gateway
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: hotelpro-api
+              uri: ${HOTELPRO_API_URL:http://localhost:8080}
+              predicates:
+                - Path=/api/**
+
+            - id: hotelpro-swagger
+              uri: ${HOTELPRO_API_URL:http://localhost:8080}
+              predicates:
+                - Path=/swagger-ui/**,/v3/api-docs/**,/swagger-ui.html
+
+server:
+  port: ${PORT:8091}

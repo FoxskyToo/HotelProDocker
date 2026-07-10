@@ -1,0 +1,61 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: hotelpro-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_DATABASE: hotelpro
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - hotelpro_mysql_data:/var/lib/mysql
+      - ./database/HotelProDB.sql:/docker-entrypoint-initdb.d/01-hotelpro.sql:ro
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  hotelpro-api:
+    build:
+      context: ./hotelpro
+
+    container_name: hotelpro-api
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/hotelpro?useSSL=false&serverTimezone=America/Santiago&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+    ports:
+      - "8080:8080"
+
+  hotelpro-gateway:
+    build:
+      context: ./hotelpro-gateway
+
+    container_name: hotelpro-gateway
+    restart: unless-stopped
+
+    depends_on:
+      - hotelpro-api
+
+    environment:
+      HOTELPRO_API_URL: http://hotelpro-api:8080
+
+    ports:
+      - "8091:8091"
+
+volumes:
+  hotelpro_mysql_data:

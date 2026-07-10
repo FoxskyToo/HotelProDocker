@@ -1,0 +1,13 @@
+# IntelliJ
+.idea/
+**/.idea/
+*.iml
+
+# Maven
+**/target/
+
+# Archivos locales
+*.log
+
+# Base de datos completa: supera el límite de GitHub
+database/hotelprodb.sql
