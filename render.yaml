@@ -1,72 +1,35 @@
 services:
-
-  # MySQL privado
-  - type: pserv
-    name: hotelpro-mysql
-    runtime: image
-    plan: starter
-
-    image:
-      url: docker.io/library/mysql:8.4
-
-    envVars:
-      - key: MYSQL_DATABASE
-        value: hotelpro
-
-      - key: MYSQL_USER
-        value: hotelpro
-
-      - key: MYSQL_PASSWORD
-        generateValue: true
-
-      - key: MYSQL_ROOT_PASSWORD
-        generateValue: true
-
-    disk:
-      name: hotelpro-mysql-data
-      mountPath: /var/lib/mysql
-      sizeGB: 10
-
-  # API principal
+  # API principal HotelPro
   - type: web
     name: hotelpro-api
     runtime: docker
+    plan: free
     rootDir: hotelpro
     dockerfilePath: ./Dockerfile
-    plan: free
     autoDeploy: true
 
     envVars:
-      - key: PORT
-        value: 10000
-
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:mysql://hotelpro-mysql:3306/hotelpro?useSSL=false&serverTimezone=America/Santiago&allowPublicKeyRetrieval=true
+        sync: false
 
       - key: SPRING_DATASOURCE_USERNAME
-        value: hotelpro
+        sync: false
 
       - key: SPRING_DATASOURCE_PASSWORD
-        fromService:
-          name: hotelpro-mysql
-          type: pserv
-          envVarKey: MYSQL_PASSWORD
+        sync: false
 
   # API Gateway
   - type: web
     name: hotelpro-gateway
     runtime: docker
+    plan: free
     rootDir: hotelpro-gateway
     dockerfilePath: ./Dockerfile
-    plan: free
     autoDeploy: true
 
     envVars:
-      - key: PORT
-        value: 10000
-
       - key: HOTELPRO_API_URL
         fromService:
-          name: hotelpro-api
           type: web
+          name: hotelpro-api
           envVarKey: RENDER_EXTERNAL_URL
